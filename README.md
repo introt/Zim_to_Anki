@@ -1,3 +1,9 @@
+# Zim_to_Anki
+
+Project aim: patching `obsidian_to_anki.py` to work with Zim Wiki without exporting to md. Patches may be breaking and upstreaming isn't currently a high priority.
+
+---
+
 # Obsidian_to_Anki
 Plugin to add flashcards from a text or markdown file to Anki. Run in Obsidian as a plugin, or from the command-line as a python script. Built with [Obsidian](https://obsidian.md/) markdown syntax in mind. Supports **user-defined custom syntax for flashcards.**  
 See the [Trello](https://trello.com/b/6MXEizGg/obsidiantoanki) for planned features.

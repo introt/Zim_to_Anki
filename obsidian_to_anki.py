@@ -1258,19 +1258,11 @@ class File:
                 url=self.url,
                 frozen_fields_dict=self.frozen_fields_dict
             )
-            if parsed.id is None:
+            if (parsed.id is None) or (parsed.id not in App.EXISTING_IDS):
                 # Need to make sure global_tags get added.
                 parsed.note["tags"] += self.global_tags.split(TAG_SEP)
                 self.notes_to_add.append(parsed.note)
                 self.id_indexes.append(position)
-            elif parsed.id not in App.EXISTING_IDS:
-                print(
-                    "Warning! Note with id ",
-                    parsed.id,
-                    " in file ",
-                    self.filename,
-                    " does not exist in Anki!"
-                )
             else:
                 self.notes_to_edit.append(parsed)
         for inline_note_match in App.INLINE_REGEXP.finditer(self.file):
@@ -1281,19 +1273,11 @@ class File:
                 url=self.url,
                 frozen_fields_dict=self.frozen_fields_dict
             )
-            if parsed.id is None:
+            if (parsed.id is None) or (parsed.id not in App.EXISTING_IDS):
                 # Need to make sure global_tags get added.
                 parsed.note["tags"] += self.global_tags.split(TAG_SEP)
                 self.inline_notes_to_add.append(parsed.note)
                 self.inline_id_indexes.append(position)
-            elif parsed.id not in App.EXISTING_IDS:
-                print(
-                    "Warning! Note with id ",
-                    parsed.id,
-                    " in file ",
-                    self.filename,
-                    " does not exist in Anki!"
-                )
             else:
                 self.notes_to_edit.append(parsed)
         # Finally, scan for deleting notes
@@ -1507,6 +1491,8 @@ class RegexFile(File):
         regexp = re.compile(
             regexp, flags=re.MULTILINE
         )
+
+        # tags and id
         for match in findignore(regexp_tags_id, self.file, self.ignore_spans):
             # This note has id, so we update it
             self.ignore_spans.append(match.span())
@@ -1516,15 +1502,13 @@ class RegexFile(File):
                 frozen_fields_dict=self.frozen_fields_dict
             )
             if parsed.id not in App.EXISTING_IDS:
-                print(
-                    "Warning! Note with id ",
-                    parsed.id,
-                    " in file ",
-                    self.filename,
-                    " does not exist in Anki!"
-                )
+                parsed.note["tags"] += self.global_tags.split(TAG_SEP)
+                self.notes_to_add.append(parsed.note)
+                self.id_indexes.append(match.end())
             else:
                 self.notes_to_edit.append(parsed)
+
+        # id
         for match in findignore(regexp_id, self.file, self.ignore_spans):
             # This note has id, so we update it
             self.ignore_spans.append(match.span())
@@ -1534,15 +1518,13 @@ class RegexFile(File):
                 frozen_fields_dict=self.frozen_fields_dict
             )
             if parsed.id not in App.EXISTING_IDS:
-                print(
-                    "Warning! Note with id ",
-                    parsed.id,
-                    " in file ",
-                    self.filename,
-                    " does not exist in Anki!"
-                )
+                parsed.note["tags"] += self.global_tags.split(TAG_SEP)
+                self.notes_to_add.append(parsed.note)
+                self.id_indexes.append(match.end())
             else:
                 self.notes_to_edit.append(parsed)
+
+        # tags
         for match in findignore(regexp_tags, self.file, self.ignore_spans):
             # This note has no id, so we add it
             self.ignore_spans.append(match.span())
@@ -1555,10 +1537,10 @@ class RegexFile(File):
                 # Error code
                 continue
             parsed.note["tags"] += self.global_tags.split(TAG_SEP)
-            self.notes_to_add.append(
-                parsed.note
-            )
+            self.notes_to_add.append(parsed.note)
             self.id_indexes.append(match.end())
+
+        # neither
         for match in findignore(regexp, self.file, self.ignore_spans):
             # This note has no id, so we update it
             self.ignore_spans.append(match.span())
@@ -1571,9 +1553,7 @@ class RegexFile(File):
                 # Error code
                 continue
             parsed.note["tags"] += self.global_tags.split(TAG_SEP)
-            self.notes_to_add.append(
-                parsed.note
-            )
+            self.notes_to_add.append(parsed.note)
             self.id_indexes.append(match.end())
 
     def fix_newline_ids(self):
